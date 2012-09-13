@@ -1,0 +1,20 @@
+{
+  "author": "Alex Robson <alex@sharplearningcurve.com> (http://sharplearningcurve.com)",
+  "name": "anvil.combiner",
+  "description": "An anvil core plugin that combines files via import statements",
+  "version": "0.0.1",
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/arobson/anvil.combiner.git"
+  },
+  "engines": {
+    "node": "~0.8.3"
+  },
+  "main": "./lib/combiner.js",
+  "devDependencies": {
+    "anvil.js": ">=0.8.5",
+    "should": "~1.1"
+  },
+  "optionalDependencies": {},
+  "keywords": [ "anvil", "core" ]
+}
