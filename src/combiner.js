@@ -19,7 +19,7 @@ module.exports = function( _, anvil ) {
 					replace: "/([ \t]*)([\/]{2}|[#]{3}).?import.?[(]?.?[\"']replace[\"'].?[)]?[;]?.?[#]{0,3}/g"
 				},
 				{
-					extensions: [ ".css", ".less", ".styl" ],
+					extensions: [ ".css" ],
 					find: "/([\/]{2}|[\/][*]).?import[(]?.?[\"'].*[\"'].?[)]?([*][\/])?/g",
 					replace: "/([ \t]*)([\/]{2}|[\/][*]).?import[(]?.?[\"']replace[\"'].?[)]?([*][\/])?/g"
 				},
