@@ -19,7 +19,7 @@ module.exports = function( _, anvil ) {
 					replace: "/([ \t]*)([\/]{2}|[#]{3}).?import.?[(]?.?[\"']replace[\"'].?[)]?[;]?.?[#]{0,3}/g"
 				},
 				{
-					extensions: [ ".css", ".less", ".styl" ],
+					extensions: [ ".css" ],
 					find: "/([\/]{2}|[\/][*]).?import[(]?.?[\"'].*[\"'].?[)]?([*][\/])?/g",
 					replace: "/([ \t]*)([\/]{2}|[\/][*]).?import[(]?.?[\"']replace[\"'].?[)]?([*][\/])?/g"
 				},
@@ -102,10 +102,9 @@ module.exports = function( _, anvil ) {
 		findImports: function( file, list, done ) {
 			var self = this,
 				imports = [],
-				ext = file.extension(),
+				ext = path.extname( file.originalPath ),
 				pattern = this.getPattern( ext ),
 				finder = pattern.find ? anvil.utility.parseRegex( pattern.find ) : undefined;
-			
 			if( file.state != "done" )
 			{
 				anvil.fs.read( [ file.workingPath, file.name ], function( content, err ) {
@@ -117,13 +116,17 @@ module.exports = function( _, anvil ) {
 										importName : "./" + importName;
 						var importedFile = _.find( list,
 							function( i ) {
-								var relativeImportPath = path.relative(
-										path.dirname( file.fullPath ),
-										path.dirname( i.fullPath ) ),
-									relativeImport = anvil.fs.buildPath( [ relativeImportPath, i.name ] );
-								relativeImport = relativeImport.match( /^[.]{1,2}[\/]/ ) ?
-									relativeImport : "./" + relativeImport;
-								return relativeImport === importName;
+								var relativeImport = self.getRelativePath( file, i );
+								var exactMatch = relativeImport === importName;
+								if( !exactMatch && relativeImport.indexOf( importName ) === 0 ) {
+									var alternate = self.hasMatchingExtension( pattern, i );
+									if( alternate ) {
+										i.importedWithoutExtension = true;
+									}
+									return alternate;
+								} else {
+									return exactMatch;
+								}
 							} );
 						if( importedFile ) {
 							file.imports.push( importedFile );
@@ -134,6 +137,21 @@ module.exports = function( _, anvil ) {
 			} else {
 				done();
 			}
+		},
+
+		getRelativePath: function( host, imported, omitPrefix ) {
+			var relativeImportPath = path.relative(
+										path.dirname( host.fullPath ),
+										path.dirname( imported.fullPath ) ),
+				relativeImport = anvil.fs.buildPath( [ relativeImportPath, imported.name ] );
+				if( !omitPrefix ) {
+					relativeImport = relativeImport.match( /^[.]{1,2}[\/]/ ) ?
+					relativeImport : "./" + relativeImport;
+				}
+
+			return imported.importedWithoutExtension ?
+				relativeImport.replace( imported.extension(), "" ) :
+				relativeImport;
 		},
 
 		getStep: function( file, imported ) {
@@ -148,15 +166,21 @@ module.exports = function( _, anvil ) {
 			};
 		},
 
+		hasMatchingExtension: function( pattern, file ) {
+			var ext = path.extname( file.originalPath ),
+				extensions = pattern.extensions,
+				alternates = pattern.alternateExtensions,
+				match = function( x ) { return x === ext; };
+			return _.any( extensions, match ) || _.any( alternates, match );
+		},
+
 		replace: function( content, file, imported, done ) {
-			var ext = file.extension(),
+			var self = this,
+				ext = path.extname( file.originalPath ),
 				pattern = this.getPattern( ext ).replace,
 				source = imported.name,
 				working = imported.workingPath,
-				importAlias = anvil.fs.buildPath( [ path.relative(
-								path.dirname( file.fullPath ),
-								path.dirname( imported.fullPath )
-							), imported.name ] ),
+				importAlias = this.getRelativePath( file, imported, true ),
 				relativeImport = anvil.fs.buildPath( [ imported.workingPath, imported.name ] );
 
 			try {
