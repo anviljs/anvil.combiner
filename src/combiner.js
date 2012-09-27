@@ -166,20 +166,33 @@ module.exports = function( _, anvil ) {
 			return { pattern: pattern, finder: finder };
 		},
 
-		getRelativePath: function( host, imported, omitPrefix, asRegex ) {
+		getRelativePath: function( host, imported, omitPrefix, asRegex, name ) {
 			var relativeImportPath = path.relative(
 										path.dirname( host.fullPath ),
 										path.dirname( imported.fullPath ) ),
 				relativeImport = anvil.fs.buildPath( [ relativeImportPath, imported.name ] ),
 				currentExt = imported.extension(),
-				originalExt = path.extname( imported.originalPath );
+				originalExt = path.extname( imported.originalPath ),
+				getRegex = function( sep ) { return anvil.utility.parseRegex( "/[\\" + sep + "]/g" ); },
+				osSep = path.sep,
+				altSep = osSep === "/" ? "\\" : "/",
+				osSepRegex = getRegex( osSep ),
+				altSepRegex = getRegex( altSep );
+
+				if( name && name.indexOf( altSep ) >= 0 ) {
+					relativeImport = relativeImport.replace( osSepRegex, altSep );
+				}
 				if( !omitPrefix ) {
 					relativeImport = relativeImport.match( /^[.]{1,2}[\/]/ ) ?
 					relativeImport : "./" + relativeImport;
 				}
-			return asRegex ?
-					relativeImport.replace( path.extname( relativeImport ), "(" + currentExt + "|" + originalExt + ")?" ) :
-					relativeImport;
+				if( asRegex ) {
+					relativeImport = relativeImport
+						.replace( path.extname( relativeImport ), "(" + currentExt + "|" + originalExt + ")?" )
+						.replace( /[\/\\]/g, "[\\/\\\\]" );
+				}
+			
+			return relativeImport;
 		},
 
 		getStep: function( file, imported ) {
@@ -213,7 +226,7 @@ module.exports = function( _, anvil ) {
 		},
 
 		importMatch: function( host, file, name, nameOnly, patterns ) {
-			var relativeImport = this.getRelativePath( host, file ),
+			var relativeImport = this.getRelativePath( host, file, false, false, name ),
 				nameMatch = relativeImport === name || relativeImport.indexOf( nameOnly ) === 0,
 				extensionMatch = this.hasMatchingExtension( patterns, file );
 			return nameMatch && extensionMatch;
