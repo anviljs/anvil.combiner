@@ -1,4 +1,5 @@
 var path = require( "path" );
+var minimatch = require( "minimatch" );
 
 module.exports = function( _, anvil ) {
 
@@ -87,13 +88,21 @@ module.exports = function( _, anvil ) {
 		},
 
 		findDependents: function( file, list ) {
-			var imported = function( importFile ) {
-				return file.fullPath === importFile.fullPath;
-			};
+			var self = this,
+				preserve = _.isArray( self.config.preserve ) ? self.config.preserve : [],
+				imported = function( importFile ) {
+					return file.fullPath === importFile.fullPath;
+				},
+				preserved = function( item ) {
+					var relativePath = anvil.fs.buildPath( [ item.relativePath, item.name ] );
+					return _.any( preserve, function( pattern ) {
+						return minimatch.match( [ relativePath ], pattern.replace( /^.[\/]/, "/" ), {} ).length > 0;
+					} );
+				};
 			_.each( list, function( item ) {
 				if( _.any( item.imports, imported ) ) {
 					file.dependents.push( item );
-					file.noCopy = true;
+					file.noCopy = !preserved( file );
 				}
 			} );
 		},
