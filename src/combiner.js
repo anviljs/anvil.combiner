@@ -39,7 +39,7 @@ module.exports = function( _, anvil ) {
 
 		run: function( done ) {
 			var self = this,
-				list = anvil.project.files,
+				list = [].concat( anvil.project.files ).concat( anvil.project.dependencies ),
 				combinerFactory = function( file ) {
 					return function( done ) {
 						self.combine( file, done );
@@ -51,7 +51,6 @@ module.exports = function( _, anvil ) {
 				match = function( file, dependency ) {
 					return dependency.fullPath === file.fullPath;
 				};
-
 			anvil.scheduler.parallel( list, findImports, function() {
 				_.each( list, function( file ) {
 					self.findDependents( file, list );
