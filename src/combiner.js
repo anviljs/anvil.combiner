@@ -34,6 +34,16 @@ module.exports = function( _, anvil ) {
 					find: "/([ \t]*)[-][ ]?import[:][ ]*[\"'].*[\"']/g",
 					replace: "/([ \t]*)[-][ ]?import[:][ ]*[\"']replace[\"']/g"
 				}
+			],
+			sanitize: [
+				{
+					target: "$",
+					dummy: "dollah"
+				},
+				{
+					target: "\\$",
+					dummy: "escape-dollah"
+				}
 			]
 		},
 
@@ -235,14 +245,14 @@ module.exports = function( _, anvil ) {
 			var stringified = pattern.replace( /replace/, "([.][/])?" + importAlias ),
 				fullPattern = anvil.utility.parseRegex( stringified ),
 				capture = fullPattern.exec( content ),
-				sanitized = newContent.replace( "$", "dollarh" ),
+				sanitized = this.sanitize( newContent ),
 				whiteSpace;
 
 			if( capture && capture.length > 1 ) {
 				whiteSpace = capture[1];
 				sanitized = whiteSpace + sanitized.replace( /\n/g, ( "\n" + whiteSpace ) );
 			}
-			return content.replace( fullPattern, sanitized ).replace( "dollarh", "$" );
+			return this.unsanitize( content.replace( fullPattern, sanitized ) );
 		},
 
 		replaceImport: function( content, file, imported, done ) {
@@ -260,6 +270,20 @@ module.exports = function( _, anvil ) {
 				anvil.log.error( "Error replacing import statements for '" + file.fullPath + "/" + file.name + "'" );
 				done();
 			}
+		},
+
+		sanitize: function( content ) {
+			_.each( this.config.sanitize, function( pattern ) {
+				content = content.replace( pattern.target, pattern.dummy );
+			} );
+			return content;
+		},
+
+		unsanitize: function( content ) {
+			_.each( this.config.sanitize, function( pattern ) {
+				content = content.replace( pattern.dummy, pattern.target );
+			} );
+			return content;
 		}
 	} );
 };
