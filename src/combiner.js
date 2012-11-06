@@ -236,7 +236,9 @@ module.exports = function( _, anvil ) {
 
 		importMatch: function( host, file, name, nameOnly, patterns ) {
 			var relativeImport = this.getRelativePath( host, file, false, false, name ),
-				nameMatch = relativeImport === name || relativeImport.indexOf( nameOnly ) === 0,
+				relativeExtension = path.extname( relativeImport ),
+				relativeNameOnly = relativeImport.replace( relativeExtension, "" ),
+				nameMatch = relativeImport === name || relativeNameOnly === nameOnly,
 				extensionMatch = this.hasMatchingExtension( patterns, file );
 			return nameMatch && extensionMatch;
 		},
