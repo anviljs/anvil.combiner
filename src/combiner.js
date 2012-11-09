@@ -37,12 +37,10 @@ module.exports = function( _, anvil ) {
 			],
 			sanitize: [
 				{
-					target: "$",
-					dummy: "dollah"
-				},
-				{
-					target: "\\$",
-					dummy: "escape-dollah"
+					targetPattern: "/[$]/g",
+					replacement: "dollah",
+					replacementPattern: "/dollah/g",
+					original: "$"
 				}
 			]
 		},
@@ -276,14 +274,16 @@ module.exports = function( _, anvil ) {
 
 		sanitize: function( content ) {
 			_.each( this.config.sanitize, function( pattern ) {
-				content = content.replace( pattern.target, pattern.dummy );
+				var rgx = anvil.utility.parseRegex( pattern.targetPattern );
+				content = content.replace( rgx, pattern.replacement );
 			} );
 			return content;
 		},
 
 		unsanitize: function( content ) {
 			_.each( this.config.sanitize, function( pattern ) {
-				content = content.replace( pattern.dummy, pattern.target );
+				var rgx = anvil.utility.parseRegex( pattern.replacementPattern );
+				content = content.replace( rgx, pattern.original );
 			} );
 			return content;
 		}
