@@ -1,5 +1,4 @@
 var path = require( "path" );
-var minimatch = require( "minimatch" );
 
 module.exports = function( _, anvil ) {
 
@@ -7,7 +6,7 @@ module.exports = function( _, anvil ) {
 		return _.filter( list, function( x ) { return x; } );
 	};
 
-	return anvil.plugin( {
+	anvil.plugin( {
 		name: "anvil.combiner",
 		activities: [ "combine", "compile" ],
 		dependencies: [ "anvil.concat", "anvil.transform" ],
@@ -103,7 +102,7 @@ module.exports = function( _, anvil ) {
 				preserved = function( item ) {
 					var relativePath = anvil.fs.buildPath( [ item.relativePath, item.name ] );
 					return _.any( preserve, function( pattern ) {
-						return minimatch.match( [ relativePath ], pattern.replace( /^.[\/]/, "/" ), {} ).length > 0;
+						return anvil.fs.match( [ relativePath ], pattern.replace( /^.[\/]/, "/" ), {} ).length > 0;
 					} );
 				};
 			_.each( list, function( item ) {

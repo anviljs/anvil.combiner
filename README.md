@@ -1,14 +1,14 @@
-## Anvil Combiner Plugin
+## Anvil Combiner Extension
 
-This plugin is a core component of anvil and is required to function as expected.
+This is a core extension of anvil and is required to function as expected.
 
 ## Installation
 
-anvil will install this plugin during post-install.
+anvil will install this extension during post-install.
 
 # Usage
 
-The combiner replaces import statements in files based on configurable regular expressions that allow the plugin to identify and replace the statements with targeted file contents. The combiner now runs before and after compile/transform so that cross-extension imports are now supported.
+The combiner replaces import statements in files based on configurable regular expressions that allow the extension to identify and replace the statements with targeted file contents. The combiner now runs before and after compile/transform so that cross-extension imports are now supported.
 
 ## Imports
 
@@ -25,7 +25,7 @@ The file name can take the following format:
 The intention here is to make it simple to import files without having to worry about what a file might be called eventually.
 
 ## Cross-Type Imports
-	note: This is a new feature to the combiner plugin and may have bugs.
+	note: This is a new feature to the combiner and may have bugs.
 
 Several requests to support this behavior have been around since anvil started but due to how the pipeline had been developed, there was no good way to add support for this feature.
 
@@ -35,7 +35,7 @@ Now that plugins can opt-in to multiple activities, the combiner has to be choos
 	* Does the target file have an alternate extension listed in the patterns?
 
 ## Adding Support for New File Types
-The combiner plugin has a very specfic object format for defining how it finds and replaces import statements based on the file type (determined by the extension). Here's what the default block would look like in a build file:
+The combiner has a very specfic object format for defining how it finds and replaces import statements based on the file type (determined by the extension). Here's what the default block would look like in a build file:
 
 	"anvil.combiner": {
 		"patterns": [
